@@ -5,57 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Trộn Đề Thi Thông Minh - THPT Tân Phước Khánh</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Times+New+Roman&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     
     <style>
+        :root {
+            --edu-blue-dark: #1e3a8a;
+            --edu-blue-primary: #2563eb;
+            --edu-blue-light: #eff6ff;
+            --edu-blue-border: #bfdbfe;
+            --bg-gray: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
         body {
-            font-family: 'Times New Roman', Times, serif;
-            background-color: #f8fafc;
-            color: #334155;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
         }
-        /* Style cho hệ thống Tabs giống ảnh */
-        .nav-tabs {
-            border-bottom: 2px solid #e2e8f0;
+
+        /* HEADER & BANNER */
+        .edu-header {
+            background: linear-gradient(135deg, var(--edu-blue-dark) 0%, #1d4ed8 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.15);
+            border-bottom: 4px solid #3b82f6;
         }
-        .nav-tabs .nav-link {
-            color: #64748b;
-            border: none;
-            border-bottom: 3px solid transparent;
-            padding: 12px 24px;
-            font-size: 16px;
-            background: transparent;
-            transition: all 0.2s;
+        .school-badge {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
         }
-        .nav-tabs .nav-link.active {
-            color: #2563eb;
-            font-weight: bold;
-            border-bottom: 3px solid #2563eb;
+
+        /* NAVIGATION TABS */
+        .nav-pills {
+            background-color: #ffffff;
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            display: inline-flex;
         }
-        /* Bộ đếm câu bên trái */
-        .sidebar-card {
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 10px 24px;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+            font-size: 15px;
+        }
+        .nav-pills .nav-link.active {
+            background-color: var(--edu-blue-primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: #f1f5f9;
+            color: var(--edu-blue-primary);
+        }
+
+        /* CARD STYLE */
+        .card-custom {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .card-custom:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        }
+
+        /* SIDEBAR COUNTER */
         .counter-box {
-            background-color: #f8fafc;
-            border-radius: 6px;
-            padding: 12px;
+            background-color: var(--edu-blue-light);
+            border: 1px solid var(--edu-blue-border);
+            border-radius: 10px;
+            padding: 12px 16px;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        /* Vùng hiển thị câu hỏi tinh gọn */
+        .counter-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--edu-blue-dark);
+        }
+
+        /* DRAG & DROP UPLOAD ZONE */
+        .upload-zone {
+            border: 2px dashed var(--edu-blue-border);
+            background-color: var(--edu-blue-light);
+            border-radius: 14px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--edu-blue-primary);
+            background-color: #dbeafe;
+        }
+
+        /* WORKFLOW STEPPER */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+        .step-active .step-circle {
+            background-color: var(--edu-blue-primary);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+        }
+        .step-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* QUESTION ITEM PREVIEW (TIMES NEW ROMAN) */
         .question-item {
-            padding: 15px 0;
-            border-bottom: 1px dashed #e2e8f0;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
         }
-        .question-item:last-child {
-            border-bottom: none;
+        .question-item:hover {
+            border-color: var(--edu-blue-border);
         }
-        /* Hiệu ứng trỏ chuột khi cho phép sửa trực tiếp */
         .editable-text {
-            display: inline-block;
             cursor: text;
             padding: 2px 6px;
             border-radius: 4px;
@@ -63,147 +169,261 @@
         }
         .editable-text:hover {
             background-color: #eff6ff;
-            outline: 1px dashed #bfdbfe;
+            outline: 1px dashed var(--edu-blue-border);
         }
         .editable-text:focus {
             background-color: #ffffff;
-            outline: 2px solid #2563eb;
+            outline: 2px solid var(--edu-blue-primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
-        /* Dấu tích xanh đổi đáp án */
+
+        /* BADGES */
+        .badge-mcq { background-color: var(--edu-blue-dark); color: white; }
+        .badge-tf { background-color: #059669; color: white; }
+
+        /* INTERACTION BUTTONS */
         .checkmark-btn {
             cursor: pointer;
             font-weight: bold;
-            margin-left: 8px;
-            transition: transform 0.1s;
+            margin-left: 10px;
+            font-size: 18px;
+            transition: transform 0.15s, color 0.15s;
         }
         .checkmark-btn:hover {
-            transform: scale(1.2);
+            transform: scale(1.25);
         }
-        .badge-mcq { background-color: #2563eb; color: white; font-size: 11px; }
-        .badge-tf { background-color: #16a34a; color: white; font-size: 11px; }
-        
+        .btn-edu {
+            background-color: var(--edu-blue-primary);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .btn-edu:hover {
+            background-color: var(--edu-blue-dark);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .btn-edu-outline {
+            background-color: transparent;
+            color: var(--edu-blue-primary);
+            border: 2px solid var(--edu-blue-primary);
+            font-weight: 600;
+            padding: 11px 24px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .btn-edu-outline:hover {
+            background-color: var(--edu-blue-light);
+            color: var(--edu-blue-dark);
+            border-color: var(--edu-blue-dark);
+        }
+
+        /* LOADING OVERLAY */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: white;
         }
     </style>
 </head>
 <body>
 
     <div id="loadingOverlay" class="d-none">
-        <div class="spinner-border text-primary mb-3" role="status"></div>
-        <h6 class="text-primary fw-bold" id="loadingText">Đang xử lý dữ liệu...</h6>
+        <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+        <h5 class="fw-semibold" id="loadingText">Đang tối ưu cấu trúc đề thi...</h5>
+        <span class="text-white-50 small">Vui lòng giữ kết nối Internet ổn định</span>
     </div>
 
+    <header class="edu-header">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="school-badge">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-white-50 small fw-bold text-uppercase tracking-wider">SỞ GIÁO DỤC VÀ ĐÀO TẠO</span>
+                        <h4 class="mb-0 fw-bold">TRƯỜNG THPT TÂN PHƯỚC KHÁNH</h4>
+                    </div>
+                </div>
+                <div class="text-end d-none d-md-block">
+                    <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-cpu-fill me-1"></i> QuizLAN Engine</h5>
+                    <span class="text-white-50 small">Phiên bản Đồng bộ Đề thi Quốc gia</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <div class="container-fluid my-4 px-4">
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <ul class="nav nav-pills" id="examTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="tab-input" data-bs-toggle="tab" data-bs-target="#pane-input" type="button" role="tab">
+                        <i class="bi bi-file-earmark-arrow-up me-2"></i>Nhập liệu đề thi
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-preview" data-bs-toggle="tab" data-bs-target="#pane-preview" type="button" role="tab">
+                        <i class="bi bi-eye me-2"></i>Xem cấu trúc chuẩn hóa
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-output" data-bs-toggle="tab" data-bs-target="#pane-output" type="button" role="tab">
+                        <i class="bi bi-gear-fill me-2"></i>Thiết lập & Xuất file
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success rounded-pill px-3 py-2"><i class="bi bi-shield-fill-check me-1"></i> Hệ thống kết nối tốt</span>
+            </div>
+        </div>
+
         <div class="row">
             
-            <div class="col-md-3 col-lg-2 mb-4">
-                <div class="sidebar-card">
-                    <h6 class="fw-bold mb-3 d-flex align-items-center">
-                        <span class="me-2">🌐</span> Bộ đếm câu
+            <div class="col-xl-3 col-lg-4 mb-4">
+                <div class="card card-custom p-4">
+                    <h6 class="fw-bold mb-3 text-uppercase tracking-wider text-secondary d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-bar-chart-fill text-primary me-2"></i>BỘ ĐẾM CÂU HỎI</span>
                     </h6>
                     
                     <div class="counter-box">
-                        <div class="small text-muted mb-1">Tổng số câu</div>
-                        <div class="fs-3 fw-bold text-primary" id="lblTotal">0</div>
+                        <div>
+                            <div class="small text-muted mb-0">Tổng số câu hỏi</div>
+                        </div>
+                        <div class="counter-value" id="lblTotal">0</div>
                     </div>
                     
-                    <div class="counter-box">
-                        <div class="small text-muted mb-1">Trắc nghiệm (MCQ)</div>
-                        <div class="fs-5 fw-bold text-dark" id="lblMcq">0</div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="p-3 border rounded text-center bg-light">
+                                <div class="small text-muted mb-1">Trắc nghiệm</div>
+                                <div class="fs-4 fw-bold text-dark" id="lblMcq">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded text-center bg-light">
+                                <div class="small text-muted mb-1">Đúng / Sai</div>
+                                <div class="fs-4 fw-bold text-dark" id="lblTf">0</div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="counter-box">
-                        <div class="small text-muted mb-1">Đúng / Sai (TF)</div>
-                        <div class="fs-5 fw-bold text-dark" id="lblTf">0</div>
+
+                    <hr class="my-4 text-muted">
+
+                    <h6 class="fw-bold mb-3 text-uppercase tracking-wider text-secondary">HƯỚNG DẪN ĐỊNH DẠNG</h6>
+                    <div class="small text-muted">
+                        <p class="mb-2"><strong class="text-dark">Câu Trắc Nghiệm (MCQ):</strong> Khai báo đáp án bằng các ký tự viết hoa <code class="bg-light p-1 rounded">A.</code>, <code class="bg-light p-1 rounded">B.</code>, <code class="bg-light p-1 rounded">C.</code>, <code class="bg-light p-1 rounded">D.</code> đầu dòng.</p>
+                        <p class="mb-0"><strong class="text-dark">Câu Đúng / Sai (TF):</strong> Khai báo bằng các ký tự viết thường <code class="bg-light p-1 rounded">a.</code>, <code class="bg-light p-1 rounded">b.</code>, <code class="bg-light p-1 rounded">c.</code>, <code class="bg-light p-1 rounded">d.</code> đầu dòng kèm chuỗi đáp án gồm 4 chữ <code class="bg-light p-1 rounded">D</code> hoặc <code class="bg-light p-1 rounded">S</code>.</p>
                     </div>
-                    
-                    <div class="small fw-bold text-secondary mt-3" id="lblStatus">Chưa tải đề thi</div>
                 </div>
             </div>
 
-            <div class="col-md-9 col-lg-10">
-                
-                <ul class="nav nav-tabs mb-4" id="examTabs" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active" id="tab-input" data-bs-toggle="tab" data-bs-target="#pane-input" type="button" role="tab">Nhập liệu đề thi</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" id="tab-preview" data-bs-toggle="tab" data-bs-target="#pane-preview" type="button" role="tab">Xem cấu trúc chuẩn hóa</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" id="tab-output" data-bs-toggle="tab" data-bs-target="#pane-output" type="button" role="tab">Thiết lập & Xuất file</button>
-                    </li>
-                </ul>
-
-                <div class="tab-content bg-white p-4 border rounded shadow-sm">
+            <div class="col-xl-9 col-lg-8">
+                <div class="card card-custom p-4">
                     
                     <div class="tab-pane fade show active" id="pane-input" role="tabpanel">
-                        <h5 class="fw-bold text-dark mb-3">Tải file đề gốc từ máy tính</h5>
-                        <p class="text-muted small">Hệ thống hỗ trợ tự động bóc tách file Word (.docx) hoặc file văn bản (.txt) chứa câu hỏi Trắc nghiệm và câu hỏi Đúng/Sai.</p>
-                        
-                        <div class="row g-3 max-width-md mt-2">
-                            <div class="col-md-8">
-                                <input type="file" id="fileInput" accept=".docx,.txt" class="form-control">
+                        <div class="step-indicator step-active">
+                            <div class="step-circle">1</div>
+                            <div class="step-title">Tải đề thi từ máy tính cá nhân</div>
+                        </div>
+
+                        <div id="dropZone" class="upload-zone mb-4" onclick="document.getElementById('fileInput').click()">
+                            <i class="bi bi-cloud-arrow-up-fill text-primary display-4 mb-3 d-block"></i>
+                            <h5 class="fw-bold text-dark">Kéo thả file đề thi của thầy vào đây</h5>
+                            <p class="text-muted small px-3">Hỗ trợ các định dạng tài liệu văn bản Word <strong class="text-primary">.docx</strong> hoặc <strong class="text-primary">.txt</strong></p>
+                            <button class="btn btn-sm btn-outline-primary px-3 rounded-pill">Hoặc nhấp chuột để chọn file</button>
+                            <input type="file" id="fileInput" accept=".docx,.txt" class="d-none" onchange="handleFileSelected()">
+                        </div>
+
+                        <div id="fileSelectedInfo" class="alert alert-info d-none d-flex align-items-center justify-content-between py-3 px-4 rounded-3 border-0">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-file-earmark-word-fill text-primary fs-3"></i>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark" id="txtFileName">ten_file_de_thi.docx</h6>
+                                    <span class="small text-muted" id="txtFileSize">0 KB</span>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <button onclick="processUploadedFile()" class="btn btn-primary w-100 fw-bold">
-                                    🔍 Phân Tích Đề Gốc
-                                </button>
-                            </div>
+                            <button onclick="processUploadedFile()" class="btn btn-edu px-4">
+                                <i class="bi bi-search me-2"></i>Phân Tích & Chuẩn Hóa
+                            </button>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="pane-preview" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                            <h5 class="fw-bold text-primary mb-0">Nội dung đề thi chi tiết</h5>
-                            <span class="text-muted small">💡 Mẹo: Nhấp chuột vào bất kỳ chữ nào để sửa đổi trực tiếp lỗi chính tả. Nhấp vào <b>✓</b> để đổi đáp án nhanh.</span>
+                        <div class="step-indicator step-active">
+                            <div class="step-circle">2</div>
+                            <div class="step-title">Danh sách câu hỏi sau khi bóc tách hệ thống</div>
+                        </div>
+
+                        <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 py-2 border-0">
+                            <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                            <span class="small text-dark-50">Thầy có thể sửa lỗi chính tả trực tiếp bằng cách click chuột vào bất kỳ chữ nào. Nhấp dấu <b>✓</b> hoặc <b>Đúng/Sai</b> để thay đổi đáp án.</span>
                         </div>
                         
                         <div id="questionsContainer">
-                            <div class="text-muted text-center py-4">Vui lòng tải và phân tích dữ liệu ở tab "Nhập liệu đề thi".</div>
+                            <div class="text-muted text-center py-5">
+                                <i class="bi bi-inboxes text-muted display-6 mb-3 d-block"></i>
+                                Chưa có dữ liệu. Thầy vui lòng nạp file đề ở tab "Nhập liệu đề thi" nhé!
+                            </div>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="pane-output" role="tabpanel">
-                        <h5 class="fw-bold text-dark mb-4">Cấu hình tham số trộn đề</h5>
-                        
-                        <div class="row g-3 align-items-center mb-4">
-                            <div class="col-auto">
-                                <label for="codeCount" class="col-form-label fw-bold">Số lượng mã đề cần tạo:</label>
+                        <div class="step-indicator step-active">
+                            <div class="step-circle">3</div>
+                            <div class="step-title">Thiết lập tham số và Xuất bản đề thi</div>
+                        </div>
+
+                        <div class="row g-4 align-items-center bg-light p-4 rounded-3 mb-4 border">
+                            <div class="col-md-7">
+                                <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shuffle me-2"></i>Số lượng mã đề cần trộn</h6>
+                                <p class="text-muted small mb-0">Hệ thống sẽ đảo câu hỏi và các phương án tương ứng độc lập để sinh đề thi mới.</p>
                             </div>
-                            <div class="col-auto">
-                                <input type="number" class="form-control" id="codeCount" value="4" min="1" max="20" style="width: 100px;">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-grid-3x3-gap-fill text-muted"></i></span>
+                                    <input type="number" class="form-control border-start-0" id="codeCount" value="4" min="1" max="24" style="font-weight: 600;">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="border-top pt-4">
-                            <h6 class="fw-bold mb-3 text-secondary">Chức năng xuất bản đề thi (.docx):</h6>
-                            <div class="d-flex flex-wrap gap-3">
-                                <button onclick="exportExam('original')" class="btn btn-outline-secondary px-4 fw-bold">
-                                    📄 Xuất Đề Gốc
-                                </button>
-                                <button onclick="exportExam('with_answers')" class="btn btn-outline-success px-4 fw-bold">
-                                    📖 Đề Gốc Kèm Đáp Án
-                                </button>
-                                <button onclick="exportExam('mix')" class="btn btn-primary px-5 fw-bold">
-                                    ⚡ Tiến Hành Trộn Đề & Tải ZIP
-                                </button>
+                        <div class="p-3 border rounded-3 bg-white">
+                            <h6 class="fw-bold mb-3 text-secondary text-uppercase tracking-wider small">Chức năng tải xuống:</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <button onclick="exportExam('original')" class="btn btn-edu-outline w-100 py-3">
+                                        <i class="bi bi-file-earmark-text me-2"></i>Tải Đề Gốc
+                                    </button>
+                                </div>
+                                <div class="col-md-4">
+                                    <button onclick="exportExam('with_answers')" class="btn btn-edu-outline w-100 py-3">
+                                        <i class="bi bi-file-earmark-check-fill me-2"></i>Đề Gốc Kèm Đáp Án
+                                    </button>
+                                </div>
+                                <div class="col-md-4">
+                                    <button onclick="exportExam('mix')" class="btn btn-edu w-100 py-3 shadow-sm">
+                                        <i class="bi bi-zip me-2"></i>Tiến Hành Trộn Đề (.ZIP)
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
-
             </div>
+
         </div>
     </div>
 
@@ -213,6 +433,41 @@
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
         let localQuestionsList = [];
 
+        // Hỗ trợ kéo thả file
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+                handleFileSelected();
+            }
+        });
+
+        function handleFileSelected() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                document.getElementById('txtFileName').innerText = file.name;
+                document.getElementById('txtFileSize').innerText = (file.size / 1024).toFixed(1) + " KB";
+                document.getElementById('fileSelectedInfo').classList.remove('d-none');
+            }
+        }
+
         function showLoading(status, msg = "Đang xử lý...") {
             const overlay = document.getElementById('loadingOverlay');
             document.getElementById('loadingText').innerText = msg;
@@ -220,16 +475,16 @@
             else overlay.classList.add('d-none');
         }
 
-        // Tải file và chuyển đổi sang văn bản
+        // Đọc dữ liệu file
         function processUploadedFile() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length === 0) {
-                alert("Thầy chưa chọn file kìa ạ!");
+                alert("Thầy chưa chọn hoặc kéo thả file đề thi kìa!");
                 return;
             }
             
             const file = fileInput.files[0];
-            showLoading(true, "Hệ thống đang đọc dữ liệu file Word...");
+            showLoading(true, "Hệ thống đang bóc tách cấu trúc tài liệu Word...");
 
             if (file.name.endsWith('.docx')) {
                 const reader = new FileReader();
@@ -249,11 +504,11 @@
             }
         }
 
-        // Thuật toán bóc tách dữ liệu thông minh (Đã sửa lỗi phân loại)
+        // Phân tách khối văn bản câu hỏi (Đồng bộ xử lý không cờ /i của thầy)
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
-                alert("File rỗng!");
+                alert("Nội dung file rỗng!");
                 return;
             }
 
@@ -273,21 +528,19 @@
                 lines.forEach((line, idx) => {
                     if (idx === 0) return;
 
-                    // FIX: Bỏ cờ 'i' để phân biệt nghiêm ngặt chữ HOA (A-D) và chữ thường (a-d)
-                    const mcqMatch = line.match(/^[A-D]\.\s*(.*)/); // Chỉ khớp MCQ: A. B. C. D.
+                    const mcqMatch = line.match(/^[A-D]\.\s*(.*)/); // Khớp chữ HOA
                     if (mcqMatch) mcqOptions.push(mcqMatch[1]);
 
-                    const tfMatch = line.match(/^[a-d]\.\s*(.*)/);   // Chỉ khớp Đúng/Sai: a. b. c. d.
+                    const tfMatch = line.match(/^[a-d]\.\s*(.*)/);   // Khớp chữ thường
                     if (tfMatch) tfStatements.push(tfMatch[1]);
 
                     if (line.toLowerCase().includes('đáp án:')) {
                         let rawAns = line.split(':')[1].trim().toUpperCase();
-                        rawAns = rawAns.replace(/Đ/g, 'D'); // Chuyển đổi tự động Đ thành D cho Đúng/Sai
-                        detectedAnsStr = rawAns.replace(/[\.\s]/g, ''); // Loại bỏ dấu chấm hoặc khoảng cách thừa
+                        rawAns = rawAns.replace(/Đ/g, 'D'); // Tự động sửa Đ thành D
+                        detectedAnsStr = rawAns.replace(/[\.\s]/g, '');
                     }
                 });
 
-                // Phân loại MCQ hoặc Đúng Sai cực kỳ chính xác
                 let isTrueFalseType = false;
                 if (tfStatements.length > 0) {
                     isTrueFalseType = true;
@@ -298,7 +551,7 @@
                 }
 
                 if (isTrueFalseType) {
-                    let finalTfAns = "DDDD"; // Mặc định
+                    let finalTfAns = "DDDD";
                     if (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr)) {
                         finalTfAns = detectedAnsStr;
                     }
@@ -310,7 +563,7 @@
                         correctAnswer: finalTfAns
                     });
                 } else if (mcqOptions.length > 0) {
-                    let ansIndex = 0; // Mặc định là A (0)
+                    let ansIndex = 0;
                     if (['A','B','C','D'].includes(detectedAnsStr)) {
                         ansIndex = detectedAnsStr.charCodeAt(0) - 65;
                     }
@@ -324,19 +577,14 @@
             });
 
             showLoading(false);
-            
-            // Cập nhật bộ đếm bên trái
             updateSidebarCounters();
-            
-            // Hiển thị dữ liệu lên giao diện
             renderQuestionsToUI();
 
-            // Tự động chuyển hướng sang Tab 2
+            // Chuyển Tab mượt mà
             const previewTab = new bootstrap.Tab(document.getElementById('tab-preview'));
             previewTab.show();
         }
 
-        // Cập nhật các thông số hiển thị ở cột trái
         function updateSidebarCounters() {
             const total = localQuestionsList.length;
             const mcq = localQuestionsList.filter(q => q.type === 'MCQ').length;
@@ -345,15 +593,8 @@
             document.getElementById('lblTotal').innerText = total;
             document.getElementById('lblMcq').innerText = mcq;
             document.getElementById('lblTf').innerText = tf;
-            
-            if(total > 0) {
-                const status = document.getElementById('lblStatus');
-                status.innerText = "Đã chuẩn hóa đề hoàn tất!";
-                status.className = "small fw-bold text-success mt-3";
-            }
         }
 
-        // Lưu giữ dữ liệu tạm thời từ giao diện sửa đổi trực tiếp vào bộ nhớ RAM
         function saveCurrentEditsToMemory() {
             localQuestionsList.forEach((q, qIdx) => {
                 const bodyEl = document.querySelector(`.editable-body[data-q-idx="${qIdx}"]`);
@@ -366,13 +607,16 @@
             });
         }
 
-        // Render trực quan dạng danh sách phẳng giống ảnh chụp
         function renderQuestionsToUI() {
             const container = document.getElementById('questionsContainer');
             container.innerHTML = "";
 
             if (localQuestionsList.length === 0) {
-                container.innerHTML = `<div class="text-muted text-center py-4">Chưa có câu hỏi.</div>`;
+                container.innerHTML = `
+                    <div class="text-muted text-center py-5">
+                        <i class="bi bi-inboxes text-muted display-6 mb-3 d-block"></i>
+                        Chưa có dữ liệu. Thầy vui lòng nạp file đề ở tab "Nhập liệu đề thi" nhé!
+                    </div>`;
                 return;
             }
 
@@ -381,26 +625,30 @@
                 itemDiv.className = "question-item";
 
                 let headerHtml = `
-                    <div class="fw-bold mb-2">
-                        <span>Câu ${qIdx + 1}: </span>
-                        <span class="editable-text editable-body" contenteditable="true" data-q-idx="${qIdx}">${q.body}</span>
-                        <span class="badge ${q.type === 'MCQ' ? 'badge-mcq' : 'badge-tf'} ms-2">
-                            ${q.type === 'MCQ' ? 'TRẮC NGHIỆM' : 'ĐÚNG / SAI'}
+                    <div class="fw-bold mb-3 d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-primary">Câu ${qIdx + 1}: </span>
+                            <span class="editable-text editable-body" contenteditable="true" data-q-idx="${qIdx}">${q.body}</span>
+                        </div>
+                        <span class="badge ${q.type === 'MCQ' ? 'badge-mcq' : 'badge-tf'} rounded-pill px-3 py-1 text-uppercase tracking-wider small">
+                            ${q.type === 'MCQ' ? 'Trắc nghiệm' : 'Đúng/Sai'}
                         </span>
                     </div>
                 `;
 
-                let optionsHtml = '<div class="ps-3 d-flex flex-column gap-1">';
+                let optionsHtml = '<div class="ps-3 d-flex flex-column gap-2">';
                 if (q.type === 'MCQ') {
                     const labels = ['A', 'B', 'C', 'D'];
                     for (let i = 0; i < 4; i++) {
                         const isCorrect = (q.correctAnswer === i);
                         optionsHtml += `
-                            <div>
-                                <span class="fw-bold">${labels[i]}.</span>
-                                <span class="editable-text editable-opt" contenteditable="true" data-q-idx="${qIdx}" data-opt-idx="${i}">${q.options[i] || ''}</span>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold me-2">${labels[i]}.</span>
+                                <span class="editable-text editable-opt flex-grow-1" contenteditable="true" data-q-idx="${qIdx}" data-opt-idx="${i}">${q.options[i] || ''}</span>
                                 <span class="checkmark-btn" onclick="changeMcqCorrectAnswer(${qIdx}, ${i})" 
-                                      style="color: ${isCorrect ? '#16a34a' : '#cbd5e0'}; opacity: ${isCorrect ? '1' : '0.3'}">✓</span>
+                                      style="color: ${isCorrect ? '#10b981' : '#cbd5e1'};">
+                                      <i class="bi ${isCorrect ? 'bi-check-circle-fill' : 'bi-circle'}"></i>
+                                </span>
                             </div>`;
                     }
                 } else {
@@ -409,12 +657,14 @@
                     for (let i = 0; i < 4; i++) {
                         const stateAns = ansStr[i] || 'D';
                         optionsHtml += `
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="fw-bold">${subLabels[i]}.</span>
-                                <span class="editable-text editable-opt" contenteditable="true" data-q-idx="${qIdx}" data-opt-idx="${i}">${q.options[i] || ''}</span>
-                                <span class="badge ${stateAns === 'D' ? 'bg-success' : 'bg-danger'} py-1 px-2" 
-                                      onclick="toggleTfSubAnswer(${qIdx}, ${i})" style="cursor: pointer; font-size: 11px; user-select: none;">
-                                    ${stateAns === 'D' ? 'Đúng ✓' : 'Sai ✗'}
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="flex-grow-1">
+                                    <span class="fw-bold me-2">${subLabels[i]}.</span>
+                                    <span class="editable-text editable-opt" contenteditable="true" data-q-idx="${qIdx}" data-opt-idx="${i}">${q.options[i] || ''}</span>
+                                </div>
+                                <span class="badge ${stateAns === 'D' ? 'bg-success' : 'bg-danger'} py-2 px-3" 
+                                      onclick="toggleTfSubAnswer(${qIdx}, ${i})" style="cursor: pointer; font-size: 11px; user-select: none; border-radius: 6px;">
+                                    ${stateAns === 'D' ? '<i class="bi bi-check-lg me-1"></i> Đúng' : '<i class="bi bi-x-lg me-1"></i> Sai'}
                                 </span>
                             </div>`;
                     }
@@ -426,14 +676,12 @@
             });
         }
 
-        // Đổi đáp án đúng cho câu MCQ khi bấm vào ✓
         function changeMcqCorrectAnswer(qIdx, optIdx) {
             saveCurrentEditsToMemory();
             localQuestionsList[qIdx].correctAnswer = optIdx;
             renderQuestionsToUI();
         }
 
-        // Đổi trạng thái Đúng/Sai cho cụm câu hỏi khi bấm vào badge
         function toggleTfSubAnswer(qIdx, subIdx) {
             saveCurrentEditsToMemory();
             let currentAnsArr = localQuestionsList[qIdx].correctAnswer.split('');
@@ -442,22 +690,20 @@
             renderQuestionsToUI();
         }
 
-        // Lấy dữ liệu cuối cùng từ giao diện để gửi đi
         function getFinalDataFromUI() {
             saveCurrentEditsToMemory();
             return localQuestionsList;
         }
 
-        // Gọi API trộn và xuất tệp tin
         function exportExam(mode) {
             const finalQuestions = getFinalDataFromUI();
             if (finalQuestions.length === 0) {
-                alert("Không có câu hỏi nào để xuất bản!");
+                alert("Chưa có câu hỏi nào trong bộ nhớ đề xuất bản!");
                 return;
             }
 
             const codeCount = parseInt(document.getElementById('codeCount').value) || 4;
-            showLoading(true, "Đang kết nối Cloud biên soạn đề thi...");
+            showLoading(true, "Đang khởi tạo máy chủ đám mây tạo đề...");
 
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
