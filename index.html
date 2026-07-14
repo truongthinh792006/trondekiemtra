@@ -177,7 +177,6 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         
-        /* BẢO TOÀN XUỐNG DÒNG VÀ THỤT LỀ CHO CODE PYTHON */
         .editable-body {
             white-space: pre-wrap;
             display: inline-block;
@@ -242,7 +241,7 @@
             color: white;
         }
 
-        /* POPUP THÔNG BÁO TÙY BIẾN ĐẸP MẮT (THAY ALERT MẶC ĐỊNH) */
+        /* POPUP ALERT */
         .custom-popup {
             position: fixed;
             top: -100px;
@@ -457,7 +456,8 @@
                         </div>
 
                     </div>
-                    </div>
+
+                </div>
             </div>
 
         </div>
@@ -469,7 +469,6 @@
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
         let localQuestionsList = [];
 
-        // HỆ THỐNG POPUP THÔNG BÁO TÙY BIẾN THAY THẾ ALERT
         function showPopup(message, type = 'warning') {
             const oldPopup = document.getElementById('quizlanPopupAlert');
             if (oldPopup) oldPopup.remove();
@@ -493,8 +492,6 @@
 
             document.body.appendChild(popup);
             setTimeout(() => popup.classList.add('show'), 40);
-
-            // Tự động đóng sau 4 giây
             setTimeout(() => { closePopup(); }, 4000);
         }
 
@@ -506,7 +503,6 @@
             }
         }
 
-        // Hỗ trợ kéo thả file
         const dropZone = document.getElementById('dropZone');
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, (e) => {
@@ -548,7 +544,6 @@
             else overlay.classList.add('d-none');
         }
 
-        // Đọc dữ liệu file
         function processUploadedFile() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length === 0) {
@@ -577,7 +572,6 @@
             }
         }
 
-        // PHÂN TÁCH KHỐI VĂN BẢN (Tối ưu hóa gộp dòng mồ côi và khử chuỗi rỗng)
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
@@ -590,8 +584,6 @@
 
             blocks.forEach(block => {
                 if (!block.trim()) return;
-                
-                // Bỏ qua khối văn bản không chứa "Câu X" ở phần đầu để tránh sập app do header/footer rác
                 if (!/^\s*Câu\s+\d+/i.test(block)) return;
 
                 const lines = block.split('\n');
@@ -601,14 +593,11 @@
                 let mcqOptions = [];
                 let tfStatements = [];
                 let detectedAnsStr = "";
-                
-                // Trạng thái đọc dòng hiện tại: 'body', 'mcq', 'tf', 'ans'
                 let currentMode = 'body';
 
                 lines.forEach(line => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) {
-                        // Bảo toàn dòng trống phân cách code bên trong thân câu hỏi
                         if (currentMode === 'body' && bodyLines.length > 0) {
                             bodyLines.push("");
                         }
@@ -633,9 +622,8 @@
                         const optText = tfMatch[2] ? tfMatch[2].trim() : "";
                         tfStatements.push(optText);
                     } else {
-                        // Thuật toán gộp dòng thông minh cho văn bản bị lỗi tự động xuống dòng ngắt quãng
                         if (currentMode === 'body') {
-                            bodyLines.push(line); // Giữ nguyên khoảng trống đầu dòng để code Python thụt lề chuẩn
+                            bodyLines.push(line);
                         } else if (currentMode === 'mcq' && mcqOptions.length > 0) {
                             mcqOptions[mcqOptions.length - 1] += " " + trimmedLine;
                         } else if (currentMode === 'tf' && tfStatements.length > 0) {
@@ -654,7 +642,6 @@
                 let questionBody = bodyLines.join('\n');
                 questionBody = questionBody.replace(/^\s*Câu\s+\d+[:\s\.-]\s*/i, '').trimEnd();
 
-                // Xác định loại câu hỏi
                 let isTrueFalseType = false;
                 if (tfStatements.length > 0 || questionBody.toUpperCase().includes("ĐÚNG HAY SAI") || questionBody.toUpperCase().includes("ĐÚNG/SAI")) {
                     isTrueFalseType = true;
@@ -664,7 +651,6 @@
                     isTrueFalseType = true;
                 }
 
-                // KHỬ CHUỖI RỖNG TRÁNH LỖI KHI XỬ LÝ
                 if (isTrueFalseType) {
                     let finalTfAns = "DDDD";
                     if (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr)) {
@@ -706,7 +692,6 @@
             
             showPopup(`Đã tải và chuẩn hóa thành công ${localQuestionsList.length} câu hỏi!`, "success");
 
-            // Chuyển sang Tab 2 xem trước trực quan
             const previewTab = new bootstrap.Tab(document.getElementById('tab-preview'));
             previewTab.show();
         }
@@ -816,14 +801,41 @@
             renderQuestionsToUI();
         }
 
+        /* HÀM ĐƯỢC NÂNG CẤP ĐA HÌNH - PHÒNG CHỐNG TRÙNG LẶP VÀ LỆCH TÊN KEY GIỮA LỚP MÁY CHỦ */
         function getFinalDataFromUI() {
             saveCurrentEditsToMemory();
-            // Đảm bảo không có chuỗi rỗng trước khi gửi đi lần cuối
-            localQuestionsList.forEach(q => {
-                if (!q.body || !q.body.trim()) q.body = " ";
-                q.options = q.options.map(opt => (opt && opt.trim()) ? opt.trim() : " ");
+            
+            return localQuestionsList.map(q => {
+                const cleanBody = (q.body && q.body.trim()) ? q.body.trim() : " ";
+                const cleanOptions = q.options.map(opt => (opt && opt.trim()) ? opt.trim() : " ");
+                
+                // Bao bọc dữ liệu đa tầng chứa mọi thuộc tính có thể xuất hiện trong Apps Script
+                let payloadItem = {
+                    type: q.type,
+                    body: cleanBody,
+                    question: cleanBody,
+                    options: cleanOptions,
+                    correctAnswer: q.correctAnswer,
+                    answer: q.correctAnswer,
+                    ans: q.correctAnswer
+                };
+
+                if (q.type === 'MCQ') {
+                    const labels = ['A', 'B', 'C', 'D'];
+                    const letterIdx = typeof q.correctAnswer === 'number' ? q.correctAnswer : 0;
+                    payloadItem.answerLetter = labels[letterIdx];
+                    payloadItem.answerLabel = labels[letterIdx];
+                    payloadItem.answerText = cleanOptions[letterIdx];
+                } else if (q.type === 'TF') {
+                    // Cung cấp đồng thời cả 4 phương án đặt tên biến cho câu hỏi Đúng/Sai
+                    payloadItem.statements = cleanOptions;
+                    payloadItem.subQuestions = cleanOptions;
+                    payloadItem.sub_questions = cleanOptions;
+                    payloadItem.tfAnswers = q.correctAnswer;
+                }
+
+                return payloadItem;
             });
-            return localQuestionsList;
         }
 
         function exportExam(mode) {
