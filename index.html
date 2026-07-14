@@ -241,6 +241,32 @@
             align-items: center;
             color: white;
         }
+
+        /* POPUP THÔNG BÁO TÙY BIẾN ĐẸP MẮT (THAY ALERT MẶC ĐỊNH) */
+        .custom-popup {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            background: #ffffff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 360px;
+            max-width: 90%;
+            border-left: 5px solid var(--edu-blue-primary);
+        }
+        .custom-popup.show {
+            top: 30px;
+        }
+        .custom-popup-success { border-left-color: #10b981; }
+        .custom-popup-danger { border-left-color: #ef4444; }
+        .custom-popup-warning { border-left-color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -443,6 +469,43 @@
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
         let localQuestionsList = [];
 
+        // HỆ THỐNG POPUP THÔNG BÁO TÙY BIẾN THAY THẾ ALERT
+        function showPopup(message, type = 'warning') {
+            const oldPopup = document.getElementById('quizlanPopupAlert');
+            if (oldPopup) oldPopup.remove();
+
+            const popup = document.createElement('div');
+            popup.id = 'quizlanPopupAlert';
+            popup.className = `custom-popup custom-popup-${type}`;
+            
+            let iconHtml = '<i class="bi bi-info-circle-fill text-warning fs-4"></i>';
+            if (type === 'success') iconHtml = '<i class="bi bi-check-circle-fill text-success fs-4"></i>';
+            if (type === 'danger') iconHtml = '<i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>';
+
+            popup.innerHTML = `
+                ${iconHtml}
+                <div class="flex-grow-1">
+                    <div class="fw-bold text-dark small" style="font-family: 'Inter', sans-serif;">Hệ thống QuizLAN</div>
+                    <div class="text-muted small" style="font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.3;">${message}</div>
+                </div>
+                <button type="button" class="btn-close small ms-2" style="font-size: 10px;" onclick="closePopup()"></button>
+            `;
+
+            document.body.appendChild(popup);
+            setTimeout(() => popup.classList.add('show'), 40);
+
+            // Tự động đóng sau 4 giây
+            setTimeout(() => { closePopup(); }, 4000);
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('quizlanPopupAlert');
+            if (popup) {
+                popup.classList.remove('show');
+                setTimeout(() => popup.remove(), 400);
+            }
+        }
+
         // Hỗ trợ kéo thả file
         const dropZone = document.getElementById('dropZone');
         ['dragenter', 'dragover'].forEach(eventName => {
@@ -489,7 +552,7 @@
         function processUploadedFile() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length === 0) {
-                alert("Thầy chưa chọn hoặc kéo thả file đề thi kìa!");
+                showPopup("Thầy chưa chọn hoặc kéo thả file đề thi kìa!", "warning");
                 return;
             }
             
@@ -503,7 +566,7 @@
                         .then(function(result) { parseRawTextIntoData(result.value); })
                         .catch(function(err) {
                             showLoading(false);
-                            alert("Lỗi cấu trúc tệp mã Word: " + err);
+                            showPopup("Lỗi cấu trúc tệp mã Word: " + err, "danger");
                         });
                 };
                 reader.readAsArrayBuffer(file);
@@ -514,11 +577,11 @@
             }
         }
 
-        // PHÂN TÁCH KHỐI VĂN BẢN (Đã sửa lỗi thụt dòng Python và tránh nhận diện nhầm regex)
+        // PHÂN TÁCH KHỐI VĂN BẢN
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
-                alert("Nội dung file rỗng!");
+                showPopup("Nội dung file tải lên hoàn toàn rỗng!", "danger");
                 return;
             }
 
@@ -528,7 +591,6 @@
             blocks.forEach(block => {
                 if (!block.trim()) return;
                 
-                // KHÔNG trim() mảng dòng toàn cục để giữ nguyên lề thụt dòng (Indentation) của Code Python
                 const lines = block.split('\n');
                 if (lines.length === 0) return;
 
@@ -540,11 +602,10 @@
                 lines.forEach(line => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) {
-                        if (bodyLines.length > 0) bodyLines.push(""); // Giữ lại dòng trống phân cách code nếu có
+                        if (bodyLines.length > 0) bodyLines.push("");
                         return;
                     }
 
-                    // Regex nhận diện phương án (Bắt buộc phải có khoảng trắng phía sau dấu . hoặc ) để tránh nhận diện nhầm mã code)
                     const mcqMatch = line.match(/^\s*([A-D])\s*[\.\)]\s+(.*)/) || line.match(/^\s*([A-D])\s*[\.\)]\s*$/);
                     const tfMatch = line.match(/^\s*([a-d])\s*[\.\)]\s+(.*)/) || line.match(/^\s*([a-d])\s*[\.\)]\s*$/);
                     const isAnsLine = trimmedLine.toLowerCase().includes('đáp án:');
@@ -557,21 +618,18 @@
                         tfStatements.push(optText);
                     } else if (isAnsLine) {
                         let rawAns = trimmedLine.split(':')[1].trim().toUpperCase();
-                        rawAns = rawAns.replace(/Đ/g, 'D'); // Tự động sửa Đ thành D
+                        rawAns = rawAns.replace(/Đ/g, 'D'); 
                         detectedAnsStr = rawAns.replace(/[\.\s]/g, '');
                     } else {
-                        // Thêm nguyên gốc dòng văn bản (giữ nguyên khoảng trống đầu dòng để code Python thụt lề chuẩn)
                         bodyLines.push(line);
                     }
                 });
 
-                // Cắt bớt dòng trống thừa ở cuối thân câu hỏi
                 while (bodyLines.length > 0 && bodyLines[bodyLines.length - 1].trim() === "") {
                     bodyLines.pop();
                 }
 
                 let questionBody = bodyLines.join('\n');
-                // Loại bỏ tiền tố "Câu X:" ở đầu câu hỏi một cách sạch sẽ
                 questionBody = questionBody.replace(/^\s*Câu\s+\d+[:\s\.-]\s*/i, '').trimEnd();
 
                 let isTrueFalseType = false;
@@ -612,6 +670,9 @@
             showLoading(false);
             updateSidebarCounters();
             renderQuestionsToUI();
+            
+            // Popup thông báo bóc tách thành công mỹ mãn
+            showPopup(`Đã tải và chuẩn hóa thành công ${localQuestionsList.length} câu hỏi!`, "success");
 
             // Chuyển sang Tab 2 xem trước trực quan
             const previewTab = new bootstrap.Tab(document.getElementById('tab-preview'));
@@ -631,7 +692,7 @@
         function saveCurrentEditsToMemory() {
             localQuestionsList.forEach((q, qIdx) => {
                 const bodyEl = document.querySelector(`.editable-body[data-q-idx="${qIdx}"]`);
-                if (bodyEl) q.body = bodyEl.innerText.trimEnd(); // Giữ nguyên ngắt dòng bên trong
+                if (bodyEl) q.body = bodyEl.innerText.trimEnd();
 
                 for (let i = 0; i < 4; i++) {
                     const optEl = document.querySelector(`.editable-opt[data-q-idx="${qIdx}"][data-opt-idx="${i}"]`);
@@ -731,7 +792,7 @@
         function exportExam(mode) {
             const finalQuestions = getFinalDataFromUI();
             if (finalQuestions.length === 0) {
-                alert("Chưa có câu hỏi nào trong bộ nhớ đề xuất bản!");
+                showPopup("Chưa tìm thấy câu hỏi nào trong bộ nhớ để tiến hành xuất bản!", "warning");
                 return;
             }
 
@@ -763,13 +824,15 @@
                     link.href = window.URL.createObjectURL(blob);
                     link.download = res.fileName;
                     link.click();
+                    
+                    showPopup("Đã khởi tạo và tải file đề thi thành công về máy tính!", "success");
                 } else {
-                    alert("Lỗi máy chủ Apps Script: " + res.error);
+                    showPopup("Lỗi hệ thống Apps Script: " + res.error, "danger");
                 }
             })
             .catch(err => {
                 showLoading(false);
-                alert("Lỗi kết nối API: " + err);
+                showPopup("Lỗi kết nối API mạng đám mây: " + err, "danger");
             });
         }
     </script>
