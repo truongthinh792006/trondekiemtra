@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ Thống Trộn Đề Thi Thông Minh</title>
+    </head>
+<body>
+    <script>
+        // Dán URL Web App thầy vừa copy ở Bước 1 vào đây
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
+
+        function exportExam(mode) {
+            // Lấy dữ liệu danh sách câu hỏi từ giao diện của thầy
+            const questionsData = getQuestionsFromUI(); 
+            const codeCount = parseInt(document.getElementById('codeCount').value) || 4;
+
+            showLoading(true);
+
+            // Gửi dữ liệu sang Google Apps Script API
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'cors',
+                body: JSON.stringify({
+                    questions: questionsData,
+                    codeCount: codeCount,
+                    mode: mode
+                })
+            })
+            .then(response => response.json())
+            .then(res => {
+                showLoading(false);
+                if (res.success) {
+                    // Giải mã Base64 nhận được để tải file về máy tính người dùng
+                    const byteCharacters = atob(res.base64);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: res.isZip ? "application/zip" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+                    
+                    // Tạo link ẩn để tự động download
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = res.fileName;
+                    link.click();
+                } else {
+                    alert("Lỗi từ hệ thống: " + res.error);
+                }
+            })
+            .catch(err => {
+                showLoading(false);
+                alert("Không thể kết nối API: " + err);
+            });
+        }
+    </script>
+</body>
+</html>
