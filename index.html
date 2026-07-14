@@ -177,7 +177,7 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         
-        /* BẢO TOÀN XUỐNG DÒNG VÀ ĐỊNH DẠNG CODE */
+        /* BẢO TOÀN XUỐNG DÒNG VÀ THỤT LỀ CHO CODE PYTHON */
         .editable-body {
             white-space: pre-wrap;
             display: inline-block;
@@ -514,7 +514,7 @@
             }
         }
 
-        // Phân tách khối văn bản câu hỏi (Đã nâng cấp thuật toán bóc tách đa dòng)
+        // PHÂN TÁCH KHỐI VĂN BẢN (Đã sửa lỗi thụt dòng Python và tránh nhận diện nhầm regex)
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
@@ -527,8 +527,10 @@
 
             blocks.forEach(block => {
                 if (!block.trim()) return;
-                const lines = block.split('\n').map(l => l.trim());
-                if (lines.filter(l => l).length === 0) return;
+                
+                // KHÔNG trim() mảng dòng toàn cục để giữ nguyên lề thụt dòng (Indentation) của Code Python
+                const lines = block.split('\n');
+                if (lines.length === 0) return;
 
                 let bodyLines = [];
                 let mcqOptions = [];
@@ -537,29 +539,40 @@
 
                 lines.forEach(line => {
                     const trimmedLine = line.trim();
-                    if (!trimmedLine) return;
+                    if (!trimmedLine) {
+                        if (bodyLines.length > 0) bodyLines.push(""); // Giữ lại dòng trống phân cách code nếu có
+                        return;
+                    }
 
-                    const mcqMatch = trimmedLine.match(/^[A-D]\.\s*(.*)/); // Khớp chữ HOA phương án trắc nghiệm
-                    const tfMatch = trimmedLine.match(/^[a-d]\.\s*(.*)/);   // Khớp chữ thường câu hỏi con Đúng/Sai
+                    // Regex nhận diện phương án (Bắt buộc phải có khoảng trắng phía sau dấu . hoặc ) để tránh nhận diện nhầm mã code)
+                    const mcqMatch = line.match(/^\s*([A-D])\s*[\.\)]\s+(.*)/) || line.match(/^\s*([A-D])\s*[\.\)]\s*$/);
+                    const tfMatch = line.match(/^\s*([a-d])\s*[\.\)]\s+(.*)/) || line.match(/^\s*([a-d])\s*[\.\)]\s*$/);
                     const isAnsLine = trimmedLine.toLowerCase().includes('đáp án:');
 
                     if (mcqMatch) {
-                        mcqOptions.push(mcqMatch[1]);
+                        const optText = mcqMatch[2] ? mcqMatch[2].trim() : "";
+                        mcqOptions.push(optText);
                     } else if (tfMatch) {
-                        tfStatements.push(tfMatch[1]);
+                        const optText = tfMatch[2] ? tfMatch[2].trim() : "";
+                        tfStatements.push(optText);
                     } else if (isAnsLine) {
                         let rawAns = trimmedLine.split(':')[1].trim().toUpperCase();
                         rawAns = rawAns.replace(/Đ/g, 'D'); // Tự động sửa Đ thành D
                         detectedAnsStr = rawAns.replace(/[\.\s]/g, '');
                     } else {
-                        // Nếu không phải là phương án hoặc dòng đáp án, nó chính là nội dung đề bài (đáp ứng câu hỏi nhiều dòng/đoạn code)
-                        bodyLines.push(trimmedLine);
+                        // Thêm nguyên gốc dòng văn bản (giữ nguyên khoảng trống đầu dòng để code Python thụt lề chuẩn)
+                        bodyLines.push(line);
                     }
                 });
 
-                // Gộp tất cả các dòng đề bài lại với ký tự xuống dòng để hiển thị chuẩn code
+                // Cắt bớt dòng trống thừa ở cuối thân câu hỏi
+                while (bodyLines.length > 0 && bodyLines[bodyLines.length - 1].trim() === "") {
+                    bodyLines.pop();
+                }
+
                 let questionBody = bodyLines.join('\n');
-                questionBody = questionBody.replace(/^Câu\s+\d+[:\s\.-]/i, '').trim();
+                // Loại bỏ tiền tố "Câu X:" ở đầu câu hỏi một cách sạch sẽ
+                questionBody = questionBody.replace(/^\s*Câu\s+\d+[:\s\.-]\s*/i, '').trimEnd();
 
                 let isTrueFalseType = false;
                 if (tfStatements.length > 0) {
@@ -600,7 +613,7 @@
             updateSidebarCounters();
             renderQuestionsToUI();
 
-            // Chuyển sang Tab 2 xem trước mượt mà
+            // Chuyển sang Tab 2 xem trước trực quan
             const previewTab = new bootstrap.Tab(document.getElementById('tab-preview'));
             previewTab.show();
         }
@@ -618,7 +631,7 @@
         function saveCurrentEditsToMemory() {
             localQuestionsList.forEach((q, qIdx) => {
                 const bodyEl = document.querySelector(`.editable-body[data-q-idx="${qIdx}"]`);
-                if (bodyEl) q.body = bodyEl.innerText.trim();
+                if (bodyEl) q.body = bodyEl.innerText.trimEnd(); // Giữ nguyên ngắt dòng bên trong
 
                 for (let i = 0; i < 4; i++) {
                     const optEl = document.querySelector(`.editable-opt[data-q-idx="${qIdx}"][data-opt-idx="${i}"]`);
