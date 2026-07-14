@@ -249,7 +249,7 @@
             }
         }
 
-        // Thuật toán bóc tách dữ liệu thông minh
+        // Thuật toán bóc tách dữ liệu thông minh (Đã sửa lỗi phân loại)
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
@@ -272,20 +272,36 @@
 
                 lines.forEach((line, idx) => {
                     if (idx === 0) return;
-                    const mcqMatch = line.match(/^[A-D]\.\s*(.*)/i);
+
+                    // FIX: Bỏ cờ 'i' để phân biệt nghiêm ngặt chữ HOA (A-D) và chữ thường (a-d)
+                    const mcqMatch = line.match(/^[A-D]\.\s*(.*)/); // Chỉ khớp MCQ: A. B. C. D.
                     if (mcqMatch) mcqOptions.push(mcqMatch[1]);
 
-                    const tfMatch = line.match(/^[a-d]\.\s*(.*)/i);
+                    const tfMatch = line.match(/^[a-d]\.\s*(.*)/);   // Chỉ khớp Đúng/Sai: a. b. c. d.
                     if (tfMatch) tfStatements.push(tfMatch[1]);
 
                     if (line.toLowerCase().includes('đáp án:')) {
-                        detectedAnsStr = line.split(':')[1].trim().toUpperCase();
+                        let rawAns = line.split(':')[1].trim().toUpperCase();
+                        rawAns = rawAns.replace(/Đ/g, 'D'); // Chuyển đổi tự động Đ thành D cho Đúng/Sai
+                        detectedAnsStr = rawAns.replace(/[\.\s]/g, ''); // Loại bỏ dấu chấm hoặc khoảng cách thừa
                     }
                 });
 
-                // Phân loại MCQ hoặc Đúng Sai
-                if (tfStatements.length > 0 || (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr))) {
-                    let finalTfAns = (detectedAnsStr.length === 4) ? detectedAnsStr : "DDDD";
+                // Phân loại MCQ hoặc Đúng Sai cực kỳ chính xác
+                let isTrueFalseType = false;
+                if (tfStatements.length > 0) {
+                    isTrueFalseType = true;
+                } else if (mcqOptions.length > 0) {
+                    isTrueFalseType = false;
+                } else if (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr)) {
+                    isTrueFalseType = true;
+                }
+
+                if (isTrueFalseType) {
+                    let finalTfAns = "DDDD"; // Mặc định
+                    if (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr)) {
+                        finalTfAns = detectedAnsStr;
+                    }
                     if (tfStatements.length === 0) tfStatements = ["", "", "", ""];
                     localQuestionsList.push({
                         type: 'TF',
@@ -294,7 +310,7 @@
                         correctAnswer: finalTfAns
                     });
                 } else if (mcqOptions.length > 0) {
-                    let ansIndex = 0;
+                    let ansIndex = 0; // Mặc định là A (0)
                     if (['A','B','C','D'].includes(detectedAnsStr)) {
                         ansIndex = detectedAnsStr.charCodeAt(0) - 65;
                     }
