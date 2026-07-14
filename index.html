@@ -207,6 +207,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
         let localQuestionsList = [];
@@ -307,13 +309,13 @@
 
             showLoading(false);
             
-            // Cập nhật bộ đếm bên trái y như hình mẫu
+            // Cập nhật bộ đếm bên trái
             updateSidebarCounters();
             
-            // Hiển thị dữ liệu lên giao diện thẻ
+            // Hiển thị dữ liệu lên giao diện
             renderQuestionsToUI();
 
-            // Tự động chuyển hướng sang Tab 2 cho thầy nhìn luôn
+            // Tự động chuyển hướng sang Tab 2
             const previewTab = new bootstrap.Tab(document.getElementById('tab-preview'));
             previewTab.show();
         }
@@ -335,7 +337,7 @@
             }
         }
 
-        // Lưu giữ dữ liệu tạm thời trước khi người dùng thực hiện chuyển đổi hoặc đổi đáp án nhanh
+        // Lưu giữ dữ liệu tạm thời từ giao diện sửa đổi trực tiếp vào bộ nhớ RAM
         function saveCurrentEditsToMemory() {
             localQuestionsList.forEach((q, qIdx) => {
                 const bodyEl = document.querySelector(`.editable-body[data-q-idx="${qIdx}"]`);
@@ -391,7 +393,7 @@
                     for (let i = 0; i < 4; i++) {
                         const stateAns = ansStr[i] || 'D';
                         optionsHtml += `
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 mb-1">
                                 <span class="fw-bold">${subLabels[i]}.</span>
                                 <span class="editable-text editable-opt" contenteditable="true" data-q-idx="${qIdx}" data-opt-idx="${i}">${q.options[i] || ''}</span>
                                 <span class="badge ${stateAns === 'D' ? 'bg-success' : 'bg-danger'} py-1 px-2" 
@@ -424,7 +426,7 @@
             renderQuestionsToUI();
         }
 
-        // Lấy dữ liệu cuối cùng từ giao diện để chuẩn bị gửi về Google App Script
+        // Lấy dữ liệu cuối cùng từ giao diện để gửi đi
         function getFinalDataFromUI() {
             saveCurrentEditsToMemory();
             return localQuestionsList;
