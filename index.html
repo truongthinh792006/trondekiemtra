@@ -4,108 +4,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Trộn Đề Thi Thông Minh - THPT Tân Phước Khánh</title>
-    <!-- Tích hợp Bootstrap 5 để có giao diện đẹp, hiện đại -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Nhúng phông chữ để đồng bộ với đề thi -->
     <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
-            background-color: #f4f6f9;
-            color: #333;
+            background-color: #f0f4f8;
+            color: #2c3e50;
         }
         .main-card {
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            background: #ffffff;
         }
         .header-banner {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
             color: white;
-            border-radius: 15px 15px 0 0;
-            padding: 30px;
+            border-radius: 16px 16px 0 0;
+            padding: 35px;
             text-align: center;
         }
+        .question-card {
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #3182ce;
+            border-radius: 10px;
+            background: #f7fafc;
+            transition: all 0.2s ease;
+        }
+        .question-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background: #ffffff;
+        }
+        .question-card.type-tf {
+            border-left-color: #38a169; /* Màu xanh lá cho câu Đúng/Sai */
+        }
         .btn-custom {
-            padding: 12px 20px;
+            padding: 12px 24px;
             font-weight: bold;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
         .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
         }
-        /* Màn hình loading khi đợi trộn đề */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
-        .spinner-border {
-            width: 3rem; height: 3rem;
-        }
     </style>
 </head>
 <body>
 
-    <!-- MÀN HÌNH LOADING (ẨN MẶC ĐỊNH) -->
     <div id="loadingOverlay" class="d-none">
-        <div class="spinner-border text-primary mb-3" role="status"></div>
-        <h5 class="text-primary fw-bold">Hệ thống đang xử lý trộn đề và xuất file Word, thầy cô vui lòng đợi trong giây lát...</h5>
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+        <h5 class="text-primary fw-bold" id="loadingText">Hệ thống đang xử lý, vui lòng đợi trong giây lát...</h5>
     </div>
 
     <div class="container my-5">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-xl-10">
                 <div class="card main-card">
-                    <!-- Tiêu đề cổng thông tin -->
                     <div class="header-banner">
                         <h2 class="fw-bold mb-1">HỆ THỐNG TRỘN ĐỀ THI THÔNG MINH</h2>
-                        <p class="mb-0 opacity-75">Dành cho Giáo viên TRƯỜNG THPT TÂN PHƯỚC KHÁNH</p>
+                        <p class="mb-0 opacity-75">Cổng Bản Quyền Nội Bộ - THPT TÂN PHƯỚC KHÁNH</p>
                     </div>
                     
                     <div class="card-body p-4">
-                        <!-- Khu vực nhập nội dung đề thi -->
-                        <div class="mb-4">
-                            <label for="rawText" class="form-label fw-bold text-primary">Bước 1: Dán nội dung danh sách câu hỏi đề gốc vào đây</label>
-                            <textarea class="form-textarea form-control" id="rawText" rows="12" placeholder="Ví dụ câu trắc nghiệm:&#10;Câu 1: Một byte bằng bao nhiêu bit?&#10;A. 2&#10;B. 4&#10;C. 8&#10;D. 16&#10;Đáp án: C"></textarea>
+                        <div class="p-3 mb-4 rounded-3" style="background-color: #ebf8ff; border: 1px dashed #bee3f8;">
+                            <h5 class="fw-bold text-primary mb-3">Bước 1: Tải đề gốc (.docx hoặc .txt) từ máy tính</h5>
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-8">
+                                    <input type="file" id="fileInput" accept=".docx,.txt" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-4">
+                                    <button onclick="processUploadedFile()" class="btn btn-primary btn-lg w-100 btn-custom">
+                                        🔍 Phân Tích Đề Gốc
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-muted small">
+                                * Hệ thống tự nhận diện câu hỏi Trắc nghiệm nhiều lựa chọn (A,B,C,D) và Trắc nghiệm Đúng/Sai (a,b,c,d dạng chuỗi DSDS/DDSD).
+                            </div>
                         </div>
 
-                        <div class="row align-items-center mb-4">
-                            <!-- Nhập số lượng mã đề mong muốn -->
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="codeCount" class="form-label fw-bold text-primary">Bước 2: Số lượng mã đề cần trộn</label>
-                                <input type="number" class="form-control" id="codeCount" value="4" min="1" max="20">
+                        <div id="editorSection" class="d-none mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <h5 class="fw-bold text-success mb-0">Bước 2: Xem toàn bộ câu hỏi & Sửa đổi trực tiếp dữ liệu</h5>
+                                <button onclick="addNewQuestion()" class="btn btn-sm btn-outline-success">+ Thêm câu hỏi mới</button>
                             </div>
-                            <div class="col-md-6 text-end pt-4">
-                                <span class="text-muted small">Phông chữ mặc định xuất file: <b>Times New Roman (Cỡ 11)</b></span>
-                            </div>
-                        </div>
+                            
+                            <div id="questionsContainer" class="d-flex flex-column gap-3 mb-4"></div>
 
-                        <hr class="my-4">
+                            <div class="border-top pt-4">
+                                <h5 class="fw-bold text-dark mb-3">Bước 3: Cấu hình và Xuất bản đề thi</h5>
+                                <div class="row align-items-center mb-4">
+                                    <div class="col-md-4">
+                                        <label for="codeCount" class="form-label fw-bold">Số lượng mã đề cần tạo:</label>
+                                        <input type="number" class="form-control" id="codeCount" value="4" min="1" max="20">
+                                    </div>
+                                    <div class="col-md-8 text-end pt-4">
+                                        <span class="text-muted small">Định dạng xuất: <b>Microsoft Word (.docx) / Lưu trữ ZIP</b></span>
+                                    </div>
+                                </div>
 
-                        <!-- Các nút chức năng điều khiển xuất dữ liệu -->
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <button onclick="exportExam('original')" class="btn btn-outline-secondary w-100 btn-custom">
-                                    📄 Xuất Đề Gốc (Word)
-                                </button>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <button onclick="exportExam('original')" class="btn btn-outline-secondary w-100 btn-custom">
+                                            📄 Xuất Đề Gốc (Word)
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button onclick="exportExam('with_answers')" class="btn btn-outline-success w-100 btn-custom">
+                                            📖 Đề Gốc Kèm Đáp Án
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button onclick="exportExam('mix')" class="btn btn-success w-100 btn-custom">
+                                            ⚡ Tiến Hành Trộn Đề & Tải ZIP
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <button onclick="exportExam('with_answers')" class="btn btn-outline-success w-100 btn-custom">
-                                    📖 Đề Gốc Kèm Đáp Án
-                                </button>
-                            </div>
-                            <div class="col-md-4">
-                                <button onclick="exportExam('mix')" class="btn btn-primary w-100 btn-custom">
-                                    ⚡ Trộn Đề & Xuất Gói (ZIP)
-                                </button>
-                            </div>
+
                         </div>
 
                     </div>
@@ -114,83 +143,296 @@
         </div>
     </div>
 
-    <!-- KHU VỰC XỬ LÝ SỰ KIỆN JAVASCRIPT KẾT NỐI API -->
     <script>
-        // Đường dẫn Web App Apps Script API của thầy đã được cập nhật chính xác
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
+        let localQuestionsList = [];
 
-        // Bật/Tắt hiệu ứng đợi xử lý trên màn hình
-        function showLoading(status) {
+        function showLoading(status, msg = "Hệ thống đang xử lý...") {
             const overlay = document.getElementById('loadingOverlay');
-            if (status) {
-                overlay.classList.remove('d-none');
+            document.getElementById('loadingText').innerText = msg;
+            if (status) overlay.classList.remove('d-none');
+            else overlay.classList.add('d-none');
+        }
+
+        // Đọc file tải lên và phân tách thành text thô
+        function processUploadedFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length === 0) {
+                alert("Thầy vui lòng chọn 1 file từ máy tính trước nhé!");
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            showLoading(true, "Đang đọc dữ liệu cấu trúc file...");
+
+            if (file.name.endsWith('.docx')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const arrayBuffer = event.target.result;
+                    mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                        .then(function(result) {
+                            parseRawTextIntoData(result.value);
+                        })
+                        .catch(function(err) {
+                            showLoading(false);
+                            alert("Không thể giải mã cấu trúc file Word: " + err);
+                        });
+                };
+                reader.readAsArrayBuffer(file);
             } else {
-                overlay.classList.add('d-none');
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    parseRawTextIntoData(event.target.result);
+                };
+                reader.readAsText(file, 'UTF-8');
             }
         }
 
-        // Hàm phân tích văn bản thô từ ô nhập liệu thành cấu trúc mảng JSON để truyền sang API
-        function getQuestionsFromUI() {
-            const text = document.getElementById('rawText').value;
-            if (!text.trim()) {
-                alert("Vui lòng nhập nội dung câu hỏi trước khi xuất đề!");
-                return [];
+        // Thuật toán bóc tách dữ liệu thông minh (MCQ và Đúng/Sai)
+        function parseRawTextIntoData(rawText) {
+            if (!rawText.trim()) {
+                showLoading(false);
+                alert("File rỗng hoặc không có nội dung văn bản hợp lệ!");
+                return;
             }
-            
-            // Tách các khối câu hỏi dựa trên từ khóa "Câu [Số]"
-            const blocks = text.split(/(?=Câu\s+\d+[:\s\.-])/i);
-            const questions = [];
-            
+
+            // Phân tách khối câu hỏi theo từ khóa "Câu [Số]"
+            const blocks = rawText.split(/(?=Câu\s+\d+[:\s\.-])/i);
+            localQuestionsList = [];
+
             blocks.forEach(block => {
                 if (!block.trim()) return;
                 const lines = block.split('\n').map(l => l.trim()).filter(l => l);
                 if (lines.length === 0) return;
-                
-                let qBody = lines[0];
-                let options = [];
+
+                let questionBody = lines[0];
+                let mcqOptions = [];
+                let tfStatements = [];
                 let correctAnswer = null;
-                
-                // Thuật toán bóc tách Câu hỏi, Đáp án A-B-C-D và đáp án đúng
-                lines.forEach((line, index) => {
-                    if (index === 0) return;
+                let isTrueFalseType = false;
+                let detectedAnsStr = "";
+
+                // Quét qua các dòng để phân biệt thể loại câu hỏi
+                lines.forEach((line, idx) => {
+                    if (idx === 0) return;
+
+                    // Nhận diện lựa chọn A, B, C, D
                     const mcqMatch = line.match(/^[A-D]\.\s*(.*)/i);
                     if (mcqMatch) {
-                        options.push(mcqMatch[1]);
+                        mcqOptions.push(mcqMatch[1]);
                     }
+
+                    // Nhận diện tiểu mục đúng/sai a, b, c, d
+                    const tfMatch = line.match(/^[a-d]\.\s*(.*)/i);
+                    if (tfMatch) {
+                        tfStatements.push(tfMatch[1]);
+                    }
+
+                    // Quét dòng đáp án
                     if (line.toLowerCase().includes('đáp án:')) {
-                        const ansStr = line.split(':')[1].trim().toUpperCase();
-                        if (['A','B','C','D'].includes(ansStr)) {
-                            correctAnswer = ansStr.charCodeAt(0) - 65;
-                        }
+                        detectedAnsStr = line.split(':')[1].trim().toUpperCase();
                     }
                 });
-                
-                if (options.length > 0) {
-                    questions.push({
+
+                // Kiểm tra xem đây là dạng Đúng/Sai (TF) hay Trắc nghiệm đơn (MCQ)
+                if (tfStatements.length > 0 || (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr))) {
+                    isTrueFalseType = true;
+                    // Chuỗi đáp án mặc định nếu thiếu hoặc sai định dạng (ví dụ: DDDD)
+                    let finalTfAns = (detectedAnsStr.length === 4) ? detectedAnsStr : "DDDD";
+                    
+                    // Nếu văn bản không liệt kê đủ a, b, c, d nhưng đáp án dạng chuỗi 4 kí tự, tạo giả lập dòng trống để thầy điền
+                    if (tfStatements.length === 0) tfStatements = ["", "", "", ""];
+
+                    localQuestionsList.push({
+                        type: 'TF',
+                        body: questionBody.replace(/^Câu\s+\d+[:\s\.-]/i, '').trim(),
+                        options: tfStatements.slice(0, 4),
+                        correctAnswer: finalTfAns
+                    });
+                } else if (mcqOptions.length > 0) {
+                    let ansIndex = 0;
+                    if (['A','B','C','D'].includes(detectedAnsStr)) {
+                        ansIndex = detectedAnsStr.charCodeAt(0) - 65;
+                    }
+                    localQuestionsList.push({
                         type: 'MCQ',
-                        body: qBody.replace(/^Câu\s+\d+[:\s\.-]/i, '').trim(),
-                        options: options,
-                        correctAnswer: correctAnswer
+                        body: questionBody.replace(/^Câu\s+\d+[:\s\.-]/i, '').trim(),
+                        options: mcqOptions,
+                        correctAnswer: ansIndex
                     });
                 }
             });
-            return questions;
+
+            showLoading(false);
+            renderQuestionsToUI();
         }
 
-        // Tiến hành gửi dữ liệu đi và tải file về máy
+        // Hiển thị danh sách các thẻ câu hỏi lên màn hình để thầy sửa trực tiếp
+        function renderQuestionsToUI() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = "";
+
+            if (localQuestionsList.length === 0) {
+                container.innerHTML = `<div class="alert alert-warning">Hệ thống chưa tìm thấy cấu trúc câu hỏi nào. Thầy hãy thử kiểm tra lại định dạng file nhé!</div>`;
+                return;
+            }
+
+            document.getElementById('editorSection').classList.remove('d-none');
+
+            localQuestionsList.forEach((q, qIdx) => {
+                const card = document.createElement('div');
+                card.className = `card question-card p-3 ${q.type === 'TF' ? 'type-tf' : ''}`;
+                card.dataset.index = qIdx;
+
+                let optionsHtml = "";
+
+                if (q.type === 'MCQ') {
+                    // Render giao diện sửa đổi cho câu hỏi MCQ (A-B-C-D)
+                    optionsHtml = `<div class="row g-2 mt-2">`;
+                    const labels = ['A', 'B', 'C', 'D'];
+                    for (let i = 0; i < 4; i++) {
+                        const optVal = q.options[i] || "";
+                        optionsHtml += `
+                            <div class="col-md-6 d-flex align-items-center gap-2">
+                                <span class="fw-bold">${labels[i]}.</span>
+                                <input type="text" class="form-control form-control-sm mcq-opt" data-opt-idx="${i}" value="${optVal.replace(/"/g, '&quot;')}">
+                            </div>`;
+                    }
+                    optionsHtml += `</div>`;
+
+                    // Dropdown lựa chọn đáp án đúng
+                    optionsHtml += `
+                        <div class="mt-3 d-flex align-items-center gap-2">
+                            <span class="small fw-bold text-danger">Đáp án đúng chọn:</span>
+                            <select class="form-select form-select-sm mcq-ans" style="width: 100px;">
+                                <option value="0" ${q.correctAnswer === 0 ? 'selected' : ''}>A</option>
+                                <option value="1" ${q.correctAnswer === 1 ? 'selected' : ''}>B</option>
+                                <option value="2" ${q.correctAnswer === 2 ? 'selected' : ''}>C</option>
+                                <option value="3" ${q.correctAnswer === 3 ? 'selected' : ''}>D</option>
+                            </select>
+                        </div>`;
+                } else {
+                    // Render giao diện sửa đổi cho cụm câu hỏi Đúng / Sai (a-b-c-d)
+                    optionsHtml = `<div class="d-flex flex-column gap-2 mt-2">`;
+                    const subLabels = ['a', 'b', 'c', 'd'];
+                    const currentAnsStr = q.correctAnswer || "DDDD";
+
+                    for (let i = 0; i < 4; i++) {
+                        const statementVal = q.options[i] || "";
+                        const stateAns = currentAnsStr[i] || "D";
+                        
+                        optionsHtml += `
+                            <div class="row g-2 align-items-center">
+                                <div class="col-1 text-end fw-bold">${subLabels[i]}.</div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control form-control-sm tf-statement" data-state-idx="${i}" value="${statementVal.replace(/"/g, '&quot;')}">
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select form-select-sm tf-sub-ans" data-state-idx="${i}">
+                                        <option value="D" ${stateAns === 'D' ? 'selected' : ''}>Đúng (D)</option>
+                                        <option value="S" ${stateAns === 'S' ? 'selected' : ''}>Sai (S)</option>
+                                    </select>
+                                </div>
+                            </div>`;
+                    }
+                    optionsHtml += `</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge ${q.type === 'TF' ? 'bg-success' : 'bg-primary'}">
+                            Câu ${qIdx + 1}: ${q.type === 'TF' ? 'Đúng / Sai' : 'Trắc nghiệm 4 lựa chọn'}
+                        </span>
+                        <button onclick="deleteQuestion(${qIdx})" class="btn btn-sm btn-link text-danger p-0 m-0 text-decoration-none fw-bold">Xóa câu này</button>
+                    </div>
+                    <textarea class="form-control q-body mb-2" rows="2" placeholder="Nội dung câu hỏi">${q.body}</textarea>
+                    ${optionsHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Chức năng Xóa câu hỏi
+        function deleteQuestion(index) {
+            if(confirm("Thầy chắc chắn muốn xóa câu hỏi số " + (index + 1) + " này không?")) {
+                localQuestionsList.splice(index, 1);
+                renderQuestionsToUI();
+            }
+        }
+
+        // Chức năng Thêm mới thủ công một câu hỏi trống
+        function addNewQuestion() {
+            localQuestionsList.push({
+                type: 'MCQ',
+                body: "Nội dung câu hỏi mới...",
+                options: ["", "", "", ""],
+                correctAnswer: 0
+            });
+            renderQuestionsToUI();
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        // Thu thập toàn bộ dữ liệu hiện tại trên các ô nhập liệu (đã chỉnh sửa) để đóng gói gửi đi
+        function getUpdatedDataFromUI() {
+            const cards = document.querySelectorAll('#questionsContainer .question-card');
+            const updatedQuestions = [];
+
+            cards.forEach(card => {
+                const origIdx = parseInt(card.dataset.index);
+                const origType = localQuestionsList[origIdx].type;
+                
+                const body = card.querySelector('.q-body').value.trim();
+                
+                if (origType === 'MCQ') {
+                    const optionInputs = card.querySelectorAll('.mcq-opt');
+                    const options = [];
+                    optionInputs.forEach(input => options.push(input.value.trim()));
+                    
+                    const correctAnswer = parseInt(card.querySelector('.mcq-ans').value);
+                    
+                    updatedQuestions.push({
+                        type: 'MCQ',
+                        body: body,
+                        options: options,
+                        correctAnswer: correctAnswer
+                    });
+                } else {
+                    const statementInputs = card.querySelectorAll('.tf-statement');
+                    const options = [];
+                    statementInputs.forEach(input => options.push(input.value.trim()));
+                    
+                    const subAnsSelects = card.querySelectorAll('.tf-sub-ans');
+                    let ansStr = "";
+                    subAnsSelects.forEach(select => ansStr += select.value);
+                    
+                    updatedQuestions.push({
+                        type: 'TF',
+                        body: body,
+                        options: options,
+                        correctAnswer: ansStr // Gửi chuỗi ví dụ: "DSDS" về API của thầy
+                    });
+                }
+            });
+
+            return updatedQuestions;
+        }
+
+        // Gọi API Google Apps Script gửi gói tin và tải file kết quả
         function exportExam(mode) {
-            const questionsData = getQuestionsFromUI(); 
-            if (questionsData.length === 0) return;
+            const finalQuestions = getUpdatedDataFromUI();
+            if (finalQuestions.length === 0) {
+                alert("Danh sách câu hỏi trống, không thể xuất bản!");
+                return;
+            }
 
             const codeCount = parseInt(document.getElementById('codeCount').value) || 4;
-
-            showLoading(true);
+            showLoading(true, "Đang kết nối API Google Apps Script để biên soạn và trộn đề...");
 
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'cors',
                 body: JSON.stringify({
-                    questions: questionsData,
+                    questions: finalQuestions,
                     codeCount: codeCount,
                     mode: mode
                 })
@@ -212,12 +454,12 @@
                     link.download = res.fileName;
                     link.click();
                 } else {
-                    alert("Hệ thống Google Apps Script báo lỗi: " + res.error);
+                    alert("Lỗi máy chủ cấu hình: " + res.error);
                 }
             })
             .catch(err => {
                 showLoading(false);
-                alert("Không thể kết nối đến API Google Apps Script. Thầy kiểm tra lại quyền truy cập cấu hình Web App (Anyone) nhé! Chi tiết: " + err);
+                alert("Kết nối API thất bại. Thầy hãy chắc chắn Web App đã chuyển sang chế độ công khai (Anyone): " + err);
             });
         }
     </script>
