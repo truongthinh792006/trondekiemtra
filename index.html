@@ -333,95 +333,98 @@
             <div class="col-xl-9 col-lg-8">
                 <div class="card card-custom p-4">
                     
-                    <div class="tab-pane fade show active" id="pane-input" role="tabpanel">
-                        <div class="step-indicator step-active">
-                            <div class="step-circle">1</div>
-                            <div class="step-title">Tải đề thi từ máy tính cá nhân</div>
-                        </div>
-
-                        <div id="dropZone" class="upload-zone mb-4" onclick="document.getElementById('fileInput').click()">
-                            <i class="bi bi-cloud-arrow-up-fill text-primary display-4 mb-3 d-block"></i>
-                            <h5 class="fw-bold text-dark">Kéo thả file đề thi của thầy vào đây</h5>
-                            <p class="text-muted small px-3">Hỗ trợ các định dạng tài liệu văn bản Word <strong class="text-primary">.docx</strong> hoặc <strong class="text-primary">.txt</strong></p>
-                            <button class="btn btn-sm btn-outline-primary px-3 rounded-pill">Hoặc nhấp chuột để chọn file</button>
-                            <input type="file" id="fileInput" accept=".docx,.txt" class="d-none" onchange="handleFileSelected()">
-                        </div>
-
-                        <div id="fileSelectedInfo" class="alert alert-info d-none d-flex align-items-center justify-content-between py-3 px-4 rounded-3 border-0">
-                            <div class="d-flex align-items-center gap-3">
-                                <i class="bi bi-file-earmark-word-fill text-primary fs-3"></i>
-                                <div>
-                                    <h6 class="mb-0 fw-bold text-dark" id="txtFileName">ten_file_de_thi.docx</h6>
-                                    <span class="small text-muted" id="txtFileSize">0 KB</span>
-                                </div>
-                            </div>
-                            <button onclick="processUploadedFile()" class="btn btn-edu px-4">
-                                <i class="bi bi-search me-2"></i>Phân Tích & Chuẩn Hóa
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="pane-preview" role="tabpanel">
-                        <div class="step-indicator step-active">
-                            <div class="step-circle">2</div>
-                            <div class="step-title">Danh sách câu hỏi sau khi bóc tách hệ thống</div>
-                        </div>
-
-                        <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 py-2 border-0">
-                            <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
-                            <span class="small text-dark-50">Thầy có thể sửa lỗi chính tả trực tiếp bằng cách click chuột vào bất kỳ chữ nào. Nhấp dấu <b>✓</b> hoặc <b>Đúng/Sai</b> để thay đổi đáp án.</span>
-                        </div>
+                    <div class="tab-content" id="examTabsContent">
                         
-                        <div id="questionsContainer">
-                            <div class="text-muted text-center py-5">
-                                <i class="bi bi-inboxes text-muted display-6 mb-3 d-block"></i>
-                                Chưa có dữ liệu. Thầy vui lòng nạp file đề ở tab "Nhập liệu đề thi" nhé!
+                        <div class="tab-pane fade show active" id="pane-input" role="tabpanel" aria-labelledby="tab-input">
+                            <div class="step-indicator step-active">
+                                <div class="step-circle">1</div>
+                                <div class="step-title">Tải đề thi từ máy tính cá nhân</div>
+                            </div>
+
+                            <div id="dropZone" class="upload-zone mb-4" onclick="document.getElementById('fileInput').click()">
+                                <i class="bi bi-cloud-arrow-up-fill text-primary display-4 mb-3 d-block"></i>
+                                <h5 class="fw-bold text-dark">Kéo thả file đề thi của thầy vào đây</h5>
+                                <p class="text-muted small px-3">Hỗ trợ các định dạng tài liệu văn bản Word <strong class="text-primary">.docx</strong> hoặc <strong class="text-primary">.txt</strong></p>
+                                <button class="btn btn-sm btn-outline-primary px-3 rounded-pill">Hoặc nhấp chuột để chọn file</button>
+                                <input type="file" id="fileInput" accept=".docx,.txt" class="d-none" onchange="handleFileSelected()">
+                            </div>
+
+                            <div id="fileSelectedInfo" class="alert alert-info d-none d-flex align-items-center justify-content-between py-3 px-4 rounded-3 border-0">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi bi-file-earmark-word-fill text-primary fs-3"></i>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark" id="txtFileName">ten_file_de_thi.docx</h6>
+                                        <span class="small text-muted" id="txtFileSize">0 KB</span>
+                                    </div>
+                                </div>
+                                <button onclick="processUploadedFile()" class="btn btn-edu px-4">
+                                    <i class="bi bi-search me-2"></i>Phân Tích & Chuẩn Hóa
+                                </button>
                             </div>
                         </div>
+
+                        <div class="tab-pane fade" id="pane-preview" role="tabpanel" aria-labelledby="tab-preview">
+                            <div class="step-indicator step-active">
+                                <div class="step-circle">2</div>
+                                <div class="step-title">Danh sách câu hỏi sau khi bóc tách hệ thống</div>
+                            </div>
+
+                            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 py-2 border-0">
+                                <i class="bi bi-lightbulb-fill text-warning fs-5"></i>
+                                <span class="small text-dark-50">Thầy có thể sửa lỗi chính tả trực tiếp bằng cách click chuột vào bất kỳ chữ nào. Nhấp dấu <b>✓</b> hoặc <b>Đúng/Sai</b> để thay đổi đáp án.</span>
+                            </div>
+                            
+                            <div id="questionsContainer">
+                                <div class="text-muted text-center py-5">
+                                    <i class="bi bi-inboxes text-muted display-6 mb-3 d-block"></i>
+                                    Chưa có dữ liệu. Thầy vui lòng nạp file đề ở tab "Nhập liệu đề thi" nhé!
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="pane-output" role="tabpanel" aria-labelledby="tab-output">
+                            <div class="step-indicator step-active">
+                                <div class="step-circle">3</div>
+                                <div class="step-title">Thiết lập tham số và Xuất bản đề thi</div>
+                            </div>
+
+                            <div class="row g-4 align-items-center bg-light p-4 rounded-3 mb-4 border">
+                                <div class="col-md-7">
+                                    <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shuffle me-2"></i>Số lượng mã đề cần trộn</h6>
+                                    <p class="text-muted small mb-0">Hệ thống sẽ đảo câu hỏi và các phương án tương ứng độc lập để sinh đề thi mới.</p>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-grid-3x3-gap-fill text-muted"></i></span>
+                                        <input type="number" class="form-control border-start-0" id="codeCount" value="4" min="1" max="24" style="font-weight: 600;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-3 border rounded-3 bg-white">
+                                <h6 class="fw-bold mb-3 text-secondary text-uppercase tracking-wider small">Chức năng tải xuống:</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <button onclick="exportExam('original')" class="btn btn-edu-outline w-100 py-3">
+                                            <i class="bi bi-file-earmark-text me-2"></i>Tải Đề Gốc
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button onclick="exportExam('with_answers')" class="btn btn-edu-outline w-100 py-3">
+                                            <i class="bi bi-file-earmark-check-fill me-2"></i>Đề Gốc Kèm Đáp Án
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button onclick="exportExam('mix')" class="btn btn-edu w-100 py-3 shadow-sm">
+                                            <i class="bi bi-zip me-2"></i>Tiến Hành Trộn Đề (.ZIP)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-
-                    <div class="tab-pane fade" id="pane-output" role="tabpanel">
-                        <div class="step-indicator step-active">
-                            <div class="step-circle">3</div>
-                            <div class="step-title">Thiết lập tham số và Xuất bản đề thi</div>
-                        </div>
-
-                        <div class="row g-4 align-items-center bg-light p-4 rounded-3 mb-4 border">
-                            <div class="col-md-7">
-                                <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shuffle me-2"></i>Số lượng mã đề cần trộn</h6>
-                                <p class="text-muted small mb-0">Hệ thống sẽ đảo câu hỏi và các phương án tương ứng độc lập để sinh đề thi mới.</p>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-grid-3x3-gap-fill text-muted"></i></span>
-                                    <input type="number" class="form-control border-start-0" id="codeCount" value="4" min="1" max="24" style="font-weight: 600;">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-3 border rounded-3 bg-white">
-                            <h6 class="fw-bold mb-3 text-secondary text-uppercase tracking-wider small">Chức năng tải xuống:</h6>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <button onclick="exportExam('original')" class="btn btn-edu-outline w-100 py-3">
-                                        <i class="bi bi-file-earmark-text me-2"></i>Tải Đề Gốc
-                                    </button>
-                                </div>
-                                <div class="col-md-4">
-                                    <button onclick="exportExam('with_answers')" class="btn btn-edu-outline w-100 py-3">
-                                        <i class="bi bi-file-earmark-check-fill me-2"></i>Đề Gốc Kèm Đáp Án
-                                    </button>
-                                </div>
-                                <div class="col-md-4">
-                                    <button onclick="exportExam('mix')" class="btn btn-edu w-100 py-3 shadow-sm">
-                                        <i class="bi bi-zip me-2"></i>Tiến Hành Trộn Đề (.ZIP)
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-
-                </div>
             </div>
 
         </div>
@@ -504,7 +507,7 @@
             }
         }
 
-        // Phân tách khối văn bản câu hỏi (Đồng bộ xử lý không cờ /i của thầy)
+        // Phân tách khối văn bản câu hỏi
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
@@ -580,7 +583,7 @@
             updateSidebarCounters();
             renderQuestionsToUI();
 
-            // Chuyển Tab mượt mà
+            // Chuyển sang Tab 2 mượt mà
             const previewTab = new bootstrap.Tab(document.getElementById('tab-preview'));
             previewTab.show();
         }
