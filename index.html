@@ -577,7 +577,7 @@
             }
         }
 
-        // PHÂN TÁCH KHỐI VĂN BẢN
+        // PHÂN TÁCH KHỐI VĂN BẢN (Tối ưu hóa gộp dòng mồ côi và khử chuỗi rỗng)
         function parseRawTextIntoData(rawText) {
             if (!rawText.trim()) {
                 showLoading(false);
@@ -591,6 +591,9 @@
             blocks.forEach(block => {
                 if (!block.trim()) return;
                 
+                // Bỏ qua khối văn bản không chứa "Câu X" ở phần đầu để tránh sập app do header/footer rác
+                if (!/^\s*Câu\s+\d+/i.test(block)) return;
+
                 const lines = block.split('\n');
                 if (lines.length === 0) return;
 
@@ -598,30 +601,49 @@
                 let mcqOptions = [];
                 let tfStatements = [];
                 let detectedAnsStr = "";
+                
+                // Trạng thái đọc dòng hiện tại: 'body', 'mcq', 'tf', 'ans'
+                let currentMode = 'body';
 
                 lines.forEach(line => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) {
-                        if (bodyLines.length > 0) bodyLines.push("");
+                        // Bảo toàn dòng trống phân cách code bên trong thân câu hỏi
+                        if (currentMode === 'body' && bodyLines.length > 0) {
+                            bodyLines.push("");
+                        }
                         return;
                     }
 
                     const mcqMatch = line.match(/^\s*([A-D])\s*[\.\)]\s+(.*)/) || line.match(/^\s*([A-D])\s*[\.\)]\s*$/);
                     const tfMatch = line.match(/^\s*([a-d])\s*[\.\)]\s+(.*)/) || line.match(/^\s*([a-d])\s*[\.\)]\s*$/);
-                    const isAnsLine = trimmedLine.toLowerCase().includes('đáp án:');
+                    const isAnsLine = trimmedLine.toLowerCase().includes("đáp án:");
 
-                    if (mcqMatch) {
-                        const optText = mcqMatch[2] ? mcqMatch[2].trim() : "";
-                        mcqOptions.push(optText);
-                    } else if (tfMatch) {
-                        const optText = tfMatch[2] ? tfMatch[2].trim() : "";
-                        tfStatements.push(optText);
-                    } else if (isAnsLine) {
+                    if (isAnsLine) {
+                        currentMode = 'ans';
                         let rawAns = trimmedLine.split(':')[1].trim().toUpperCase();
                         rawAns = rawAns.replace(/Đ/g, 'D'); 
                         detectedAnsStr = rawAns.replace(/[\.\s]/g, '');
+                    } else if (mcqMatch) {
+                        currentMode = 'mcq';
+                        const optText = mcqMatch[2] ? mcqMatch[2].trim() : "";
+                        mcqOptions.push(optText);
+                    } else if (tfMatch) {
+                        currentMode = 'tf';
+                        const optText = tfMatch[2] ? tfMatch[2].trim() : "";
+                        tfStatements.push(optText);
                     } else {
-                        bodyLines.push(line);
+                        // Thuật toán gộp dòng thông minh cho văn bản bị lỗi tự động xuống dòng ngắt quãng
+                        if (currentMode === 'body') {
+                            bodyLines.push(line); // Giữ nguyên khoảng trống đầu dòng để code Python thụt lề chuẩn
+                        } else if (currentMode === 'mcq' && mcqOptions.length > 0) {
+                            mcqOptions[mcqOptions.length - 1] += " " + trimmedLine;
+                        } else if (currentMode === 'tf' && tfStatements.length > 0) {
+                            tfStatements[tfStatements.length - 1] += " " + trimmedLine;
+                        } else if (currentMode === 'ans') {
+                            let extraAns = trimmedLine.toUpperCase().replace(/Đ/g, 'D');
+                            detectedAnsStr += extraAns.replace(/[\.\s]/g, '');
+                        }
                     }
                 });
 
@@ -632,8 +654,9 @@
                 let questionBody = bodyLines.join('\n');
                 questionBody = questionBody.replace(/^\s*Câu\s+\d+[:\s\.-]\s*/i, '').trimEnd();
 
+                // Xác định loại câu hỏi
                 let isTrueFalseType = false;
-                if (tfStatements.length > 0) {
+                if (tfStatements.length > 0 || questionBody.toUpperCase().includes("ĐÚNG HAY SAI") || questionBody.toUpperCase().includes("ĐÚNG/SAI")) {
                     isTrueFalseType = true;
                 } else if (mcqOptions.length > 0) {
                     isTrueFalseType = false;
@@ -641,27 +664,37 @@
                     isTrueFalseType = true;
                 }
 
+                // KHỬ CHUỖI RỖNG TRÁNH LỖI KHI XỬ LÝ
                 if (isTrueFalseType) {
                     let finalTfAns = "DDDD";
                     if (detectedAnsStr.length === 4 && /^[DS]+$/.test(detectedAnsStr)) {
                         finalTfAns = detectedAnsStr;
                     }
-                    if (tfStatements.length === 0) tfStatements = ["", "", "", ""];
+                    while (tfStatements.length < 4) {
+                        tfStatements.push(" ");
+                    }
+                    const cleanedStatements = tfStatements.slice(0, 4).map(s => s.trim() ? s.trim() : " ");
+
                     localQuestionsList.push({
                         type: 'TF',
-                        body: questionBody,
-                        options: tfStatements.slice(0, 4),
+                        body: questionBody ? questionBody : " ",
+                        options: cleanedStatements,
                         correctAnswer: finalTfAns
                     });
-                } else if (mcqOptions.length > 0) {
+                } else {
                     let ansIndex = 0;
-                    if (['A','B','C','D'].includes(detectedAnsStr)) {
+                    if (['A', 'B', 'C', 'D'].includes(detectedAnsStr)) {
                         ansIndex = detectedAnsStr.charCodeAt(0) - 65;
                     }
+                    while (mcqOptions.length < 4) {
+                        mcqOptions.push(" ");
+                    }
+                    const cleanedOptions = mcqOptions.slice(0, 4).map(o => o.trim() ? o.trim() : " ");
+
                     localQuestionsList.push({
                         type: 'MCQ',
-                        body: questionBody,
-                        options: mcqOptions,
+                        body: questionBody ? questionBody : " ",
+                        options: cleanedOptions,
                         correctAnswer: ansIndex
                     });
                 }
@@ -671,7 +704,6 @@
             updateSidebarCounters();
             renderQuestionsToUI();
             
-            // Popup thông báo bóc tách thành công mỹ mãn
             showPopup(`Đã tải và chuẩn hóa thành công ${localQuestionsList.length} câu hỏi!`, "success");
 
             // Chuyển sang Tab 2 xem trước trực quan
@@ -786,6 +818,11 @@
 
         function getFinalDataFromUI() {
             saveCurrentEditsToMemory();
+            // Đảm bảo không có chuỗi rỗng trước khi gửi đi lần cuối
+            localQuestionsList.forEach(q => {
+                if (!q.body || !q.body.trim()) q.body = " ";
+                q.options = q.options.map(opt => (opt && opt.trim()) ? opt.trim() : " ");
+            });
             return localQuestionsList;
         }
 
@@ -797,7 +834,7 @@
             }
 
             const codeCount = parseInt(document.getElementById('codeCount').value) || 4;
-            showLoading(true, "Đang khởi tạo máy chủ đám mây tạo đề...");
+            showLoading(true, "Đang kết nối máy chủ đám mây tạo đề...");
 
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
