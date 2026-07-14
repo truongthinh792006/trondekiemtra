@@ -2,21 +2,190 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hệ Thống Trộn Đề Thi Thông Minh</title>
-    </head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Trộn Đề Thi Thông Minh - THPT Tân Phước Khánh</title>
+    <!-- Tích hợp Bootstrap 5 để có giao diện đẹp, hiện đại -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Nhúng phông chữ để đồng bộ với đề thi -->
+    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .main-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .header-banner {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 30px;
+            text-align: center;
+        }
+        .btn-custom {
+            padding: 12px 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        /* Màn hình loading khi đợi trộn đề */
+        #loadingOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner-border {
+            width: 3rem; height: 3rem;
+        }
+    </style>
+</head>
 <body>
+
+    <!-- MÀN HÌNH LOADING (ẨN MẶC ĐỊNH) -->
+    <div id="loadingOverlay" class="d-none">
+        <div class="spinner-border text-primary mb-3" role="status"></div>
+        <h5 class="text-primary fw-bold">Hệ thống đang xử lý trộn đề và xuất file Word, thầy cô vui lòng đợi trong giây lát...</h5>
+    </div>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card main-card">
+                    <!-- Tiêu đề cổng thông tin -->
+                    <div class="header-banner">
+                        <h2 class="fw-bold mb-1">HỆ THỐNG TRỘN ĐỀ THI THÔNG MINH</h2>
+                        <p class="mb-0 opacity-75">Dành cho Giáo viên TRƯỜNG THPT TÂN PHƯỚC KHÁNH</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Khu vực nhập nội dung đề thi -->
+                        <div class="mb-4">
+                            <label for="rawText" class="form-label fw-bold text-primary">Bước 1: Dán nội dung danh sách câu hỏi đề gốc vào đây</label>
+                            <textarea class="form-textarea form-control" id="rawText" rows="12" placeholder="Ví dụ câu trắc nghiệm:&#10;Câu 1: Một byte bằng bao nhiêu bit?&#10;A. 2&#10;B. 4&#10;C. 8&#10;D. 16&#10;Đáp án: C"></textarea>
+                        </div>
+
+                        <div class="row align-items-center mb-4">
+                            <!-- Nhập số lượng mã đề mong muốn -->
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="codeCount" class="form-label fw-bold text-primary">Bước 2: Số lượng mã đề cần trộn</label>
+                                <input type="number" class="form-control" id="codeCount" value="4" min="1" max="20">
+                            </div>
+                            <div class="col-md-6 text-end pt-4">
+                                <span class="text-muted small">Phông chữ mặc định xuất file: <b>Times New Roman (Cỡ 11)</b></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Các nút chức năng điều khiển xuất dữ liệu -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <button onclick="exportExam('original')" class="btn btn-outline-secondary w-100 btn-custom">
+                                    📄 Xuất Đề Gốc (Word)
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button onclick="exportExam('with_answers')" class="btn btn-outline-success w-100 btn-custom">
+                                    📖 Đề Gốc Kèm Đáp Án
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button onclick="exportExam('mix')" class="btn btn-primary w-100 btn-custom">
+                                    ⚡ Trộn Đề & Xuất Gói (ZIP)
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC XỬ LÝ SỰ KIỆN JAVASCRIPT KẾT NỐI API -->
     <script>
-        // Dán URL Web App thầy vừa copy ở Bước 1 vào đây
+        // Đường dẫn Web App Apps Script API của thầy đã được cập nhật chính xác
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Dk2au2ylqQ1bRlZoybLNGCISH7j7uBsqpS4ovMDYHgU6ucr8IKEl50BLYHlAY_oG/exec";
 
+        // Bật/Tắt hiệu ứng đợi xử lý trên màn hình
+        function showLoading(status) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (status) {
+                overlay.classList.remove('d-none');
+            } else {
+                overlay.classList.add('d-none');
+            }
+        }
+
+        // Hàm phân tích văn bản thô từ ô nhập liệu thành cấu trúc mảng JSON để truyền sang API
+        function getQuestionsFromUI() {
+            const text = document.getElementById('rawText').value;
+            if (!text.trim()) {
+                alert("Vui lòng nhập nội dung câu hỏi trước khi xuất đề!");
+                return [];
+            }
+            
+            // Tách các khối câu hỏi dựa trên từ khóa "Câu [Số]"
+            const blocks = text.split(/(?=Câu\s+\d+[:\s\.-])/i);
+            const questions = [];
+            
+            blocks.forEach(block => {
+                if (!block.trim()) return;
+                const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+                if (lines.length === 0) return;
+                
+                let qBody = lines[0];
+                let options = [];
+                let correctAnswer = null;
+                
+                // Thuật toán bóc tách Câu hỏi, Đáp án A-B-C-D và đáp án đúng
+                lines.forEach((line, index) => {
+                    if (index === 0) return;
+                    const mcqMatch = line.match(/^[A-D]\.\s*(.*)/i);
+                    if (mcqMatch) {
+                        options.push(mcqMatch[1]);
+                    }
+                    if (line.toLowerCase().includes('đáp án:')) {
+                        const ansStr = line.split(':')[1].trim().toUpperCase();
+                        if (['A','B','C','D'].includes(ansStr)) {
+                            correctAnswer = ansStr.charCodeAt(0) - 65;
+                        }
+                    }
+                });
+                
+                if (options.length > 0) {
+                    questions.push({
+                        type: 'MCQ',
+                        body: qBody.replace(/^Câu\s+\d+[:\s\.-]/i, '').trim(),
+                        options: options,
+                        correctAnswer: correctAnswer
+                    });
+                }
+            });
+            return questions;
+        }
+
+        // Tiến hành gửi dữ liệu đi và tải file về máy
         function exportExam(mode) {
-            // Lấy dữ liệu danh sách câu hỏi từ giao diện của thầy
             const questionsData = getQuestionsFromUI(); 
+            if (questionsData.length === 0) return;
+
             const codeCount = parseInt(document.getElementById('codeCount').value) || 4;
 
             showLoading(true);
 
-            // Gửi dữ liệu sang Google Apps Script API
             fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'cors',
@@ -30,7 +199,6 @@
             .then(res => {
                 showLoading(false);
                 if (res.success) {
-                    // Giải mã Base64 nhận được để tải file về máy tính người dùng
                     const byteCharacters = atob(res.base64);
                     const byteNumbers = new Array(byteCharacters.length);
                     for (let i = 0; i < byteCharacters.length; i++) {
@@ -39,18 +207,17 @@
                     const byteArray = new Uint8Array(byteNumbers);
                     const blob = new Blob([byteArray], { type: res.isZip ? "application/zip" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
                     
-                    // Tạo link ẩn để tự động download
                     const link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
                     link.download = res.fileName;
                     link.click();
                 } else {
-                    alert("Lỗi từ hệ thống: " + res.error);
+                    alert("Hệ thống Google Apps Script báo lỗi: " + res.error);
                 }
             })
             .catch(err => {
                 showLoading(false);
-                alert("Không thể kết nối API: " + err);
+                alert("Không thể kết nối đến API Google Apps Script. Thầy kiểm tra lại quyền truy cập cấu hình Web App (Anyone) nhé! Chi tiết: " + err);
             });
         }
     </script>
